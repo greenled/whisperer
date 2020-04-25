@@ -89,7 +89,7 @@ setInterval(async () => {
   });
   await scraper.run(baseUrl, depPids);
   await scraper.close();
-}, 10000);
+}, 900000);
 
 expressApp.get("/", (req, res) => {
   res.send("Hello World!");
