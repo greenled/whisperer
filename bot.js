@@ -4,13 +4,18 @@ const TelegrafInlineMenu = require("telegraf-inline-menu");
 const events = require("./scraper/events");
 const TuenvioScraper = require("./scraper/TuenvioScraper");
 
+const PORT = process.env.PORT;
+const URL = process.env.URL;
+const token = process.env.BOT_TOKEN
 const baseUrl = process.env.BASE_URL;
 const depPids = process.env.DEP_PIDS.split(",");
 const include_terms = process.env.INCLUDE_TERMS.split(",");
 const exclude_terms = process.env.EXCLUDE_TERMS.split(",");
-const bot = new Telegraf(process.env.BOT_TOKEN);
-const telegram = new Telegram(process.env.BOT_TOKEN);
+const bot = new Telegraf(token);
+const telegram = new Telegram(token);
 const chatIds = [];
+
+bot.telegram.setWebhook(`${URL}/bot${token}`);
 
 bot.start((ctx) => {
   if (chatIds.indexOf(ctx.chat.id) == -1) {
@@ -83,4 +88,4 @@ setInterval(async () => {
   await scraper.close();
 }, 10000);
 
-bot.launch();
+bot.startWebhook(`/bot${token}`, null, PORT)
