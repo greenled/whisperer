@@ -62,7 +62,7 @@ function TuenvioScraper(options) {
 
     const resourcesToBlock = [
       "image",
-      // "stylesheet",
+      "stylesheet",
       "media",
       "font",
       "texttrack",
@@ -78,8 +78,8 @@ function TuenvioScraper(options) {
         request.url().includes(".jpg") ||
         request.url().includes(".jpeg") ||
         request.url().includes(".png") ||
-        request.url().includes(".gif")
-        // || request.url().includes(".css")
+        request.url().includes(".gif") ||
+        request.url().includes(".css")
       ) {
         request.abort();
       } else {
