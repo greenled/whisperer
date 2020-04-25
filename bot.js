@@ -76,10 +76,10 @@ setInterval(async () => {
   scraper.on(events.custom.data, ({ title, url, image, price }) => {
     if (
       include_terms.some(
-        (term) => title.toLowerCase().indexOf(term.toLowerCase()) > -1
+        (term) => title.toLowerCase().includes(term.toLowerCase())
       ) &&
       exclude_terms.every(
-        (term) => title.toLowerCase().indexOf(term.toLowerCase()) == -1
+        (term) => !title.toLowerCase().includes(term.toLowerCase())
       )
     ) {
       for (const chatId of chatIds) {
