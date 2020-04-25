@@ -69,7 +69,7 @@ bot.use(menu.init());
 
 setInterval(async () => {
   const options = {
-    timeout: 0,
+    timeout: 60000,
   };
 
   const scraper = new TuenvioScraper(options);
