@@ -3,18 +3,21 @@ const Telegram = require("telegraf/telegram");
 const TelegrafInlineMenu = require("telegraf-inline-menu");
 const events = require("./scraper/events");
 const TuenvioScraper = require("./scraper/TuenvioScraper");
+const express = require("express");
 
 const PORT = process.env.PORT;
 const URL = process.env.URL;
-const token = process.env.BOT_TOKEN
+const token = process.env.BOT_TOKEN;
 const baseUrl = process.env.BASE_URL;
 const depPids = process.env.DEP_PIDS.split(",");
 const include_terms = process.env.INCLUDE_TERMS.split(",");
 const exclude_terms = process.env.EXCLUDE_TERMS.split(",");
 const bot = new Telegraf(token);
 const telegram = new Telegram(token);
+const expressApp = express();
 const chatIds = [];
 
+expressApp.use(bot.webhookCallback(`/bot${token}`));
 bot.telegram.setWebhook(`${URL}/bot${token}`);
 
 bot.start((ctx) => {
@@ -88,4 +91,9 @@ setInterval(async () => {
   await scraper.close();
 }, 10000);
 
-bot.startWebhook(`/bot${token}`, null, PORT)
+expressApp.get("/", (req, res) => {
+  res.send("Hello World!");
+});
+expressApp.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});
