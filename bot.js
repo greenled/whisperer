@@ -21,16 +21,17 @@ const express = require("express");
   expressApp.use(bot.webhookCallback(`/bot${token}`));
   bot.telegram.setWebhook(`${URL}/bot${token}`);
 
-  bot.start((ctx) => {
-    if (chatIds.indexOf(ctx.chat.id) == -1) {
-      chatIds.push(ctx.chat.id);
+  bot.start(async (ctx) => {
+    try {
+      await ctx.reply("Hola");
+      await ctx.reply(
+        `Te avisaré si hay algún producto en ${baseUrl} cuyo nombre contenga ${include_terms.join(
+          ", "
+        )}, excepto si también contiene ${exclude_terms.join(", ")}`
+      );
+    } catch (err) {
+      console.log(err.stack);
     }
-    ctx.reply("Hola");
-    ctx.reply(
-      `Te avisaré si hay algún producto en ${baseUrl} cuyo nombre contenga ${include_terms.join(
-        ", "
-      )}, excepto si también contiene ${exclude_terms.join(", ")}`
-    );
   });
 
   bot.help((ctx) => {
@@ -49,17 +50,21 @@ const express = require("express");
   menu.setCommand("config");
   menu.select("s", ["Sí", "No"], {
     setFunc: async (ctx, key) => {
-      const index = chatIds.indexOf(ctx.chat.id);
-      if (key === "Sí") {
-        if (index == -1) {
-          chatIds.push(ctx.chat.id);
+      try {
+        const index = chatIds.indexOf(ctx.chat.id);
+        if (key === "Sí") {
+          if (index == -1) {
+            chatIds.push(ctx.chat.id);
+          }
+          await ctx.answerCbQuery("Te avisaré");
+        } else {
+          if (index > -1) {
+            chatIds.splice(index, 1);
+          }
+          await ctx.answerCbQuery("No te avisaré");
         }
-        await ctx.answerCbQuery("Te avisaré");
-      } else {
-        if (index > -1) {
-          chatIds.splice(index, 1);
-        }
-        await ctx.answerCbQuery("No te avisaré");
+      } catch (err) {
+        console.log(err.stack);
       }
     },
     isSetFunc: (_ctx, key) =>
@@ -69,28 +74,32 @@ const express = require("express");
   bot.use(menu.init());
 
   setInterval(async () => {
-    const options = {
-      timeout: 60000,
-    };
+    try {
+      const options = {
+        timeout: 60000,
+      };
 
-    const scraper = new TuenvioScraper(options);
-    scraper.on(events.custom.data, ({ title, url, image, price }) => {
-      if (
-        include_terms.some((term) =>
-          title.toLowerCase().includes(term.toLowerCase())
-        ) &&
-        exclude_terms.every(
-          (term) => !title.toLowerCase().includes(term.toLowerCase())
-        )
-      ) {
-        for (const chatId of chatIds) {
-          telegram.sendMessage(chatId, `${title} (${price}) ${url}`);
+      const scraper = new TuenvioScraper(options);
+      scraper.on(events.custom.data, ({ title, url, image, price }) => {
+        if (
+          include_terms.some((term) =>
+            title.toLowerCase().includes(term.toLowerCase())
+          ) &&
+          exclude_terms.every(
+            (term) => !title.toLowerCase().includes(term.toLowerCase())
+          )
+        ) {
+          for (const chatId of chatIds) {
+            await telegram.sendMessage(chatId, `${title} (${price}) ${url}`);
+          }
         }
-      }
-    });
-    scraper.on(events.custom.error, (err) => console.error);
-    await scraper.run(baseUrl, depPids);
-    await scraper.close();
+      });
+      scraper.on(events.custom.error, (err) => console.error);
+      await scraper.run(baseUrl, depPids);
+      await scraper.close();
+    } catch (err) {
+      console.log(err.stack);
+    }
   }, 300000);
 
   expressApp.get("/", (req, res) => {
