@@ -4,10 +4,13 @@ const TelegrafInlineMenu = require("telegraf-inline-menu");
 const events = require("./scraper/events");
 const TuenvioScraper = require("./scraper/TuenvioScraper");
 const express = require("express");
+const mongoose = require("mongoose");
+const Preferences = require("./models/Preferences");
 
 (async () => {
   const PORT = process.env.PORT;
   const URL = process.env.URL;
+  const DB_URL = process.env.DB_URL;
   const token = process.env.BOT_TOKEN;
   const baseUrl = process.env.BASE_URL;
   const depPids = process.env.DEP_PIDS.split(",");
@@ -16,15 +19,29 @@ const express = require("express");
   const bot = new Telegraf(token);
   const telegram = new Telegram(token);
   const expressApp = express();
-  const chatIds = [];
+
+  mongoose.connect(DB_URL, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  });
+  const db = mongoose.connection;
+  db.on("error", console.error.bind(console, "MongoDB connection error:"));
 
   expressApp.use(bot.webhookCallback(`/bot${token}`));
   bot.telegram.setWebhook(`${URL}/bot${token}`);
 
   bot.start(async (ctx) => {
     try {
-      await ctx.reply("Hola");
-      await ctx.reply(
+      let preferences = await Preferences.findOne({ chatId: ctx.chat.id });
+      if (preferences === null) {
+        preferences = new Preferences({
+          chatId: ctx.chat.id,
+          getNotifications: true,
+        });
+        await preferences.save();
+      }
+      ctx.reply("Hola");
+      ctx.reply(
         `Te avisaré si hay algún producto en ${baseUrl} cuyo nombre contenga ${include_terms.join(
           ", "
         )}, excepto si también contiene ${exclude_terms.join(", ")}`
@@ -51,15 +68,19 @@ const express = require("express");
   menu.select("s", ["Sí", "No"], {
     setFunc: async (ctx, key) => {
       try {
-        const index = chatIds.indexOf(ctx.chat.id);
+        const preferences = await Preferences.findOne({
+          chatId: ctx.chat.id,
+        });
         if (key === "Sí") {
-          if (index == -1) {
-            chatIds.push(ctx.chat.id);
+          if (preferences.getNotifications === false) {
+            preferences.getNotifications = true;
+            await preferences.save();
           }
           await ctx.answerCbQuery("Te avisaré");
         } else {
-          if (index > -1) {
-            chatIds.splice(index, 1);
+          if (preferences.getNotifications === true) {
+            preferences.getNotifications = false;
+            await preferences.save();
           }
           await ctx.answerCbQuery("No te avisaré");
         }
@@ -67,9 +88,19 @@ const express = require("express");
         console.log(err.stack);
       }
     },
-    isSetFunc: (_ctx, key) =>
-      (key === "Sí" && chatIds.indexOf(_ctx.chat.id) > -1) ||
-      (key === "No" && chatIds.indexOf(_ctx.chat.id) == -1),
+    isSetFunc: async (_ctx, key) => {
+      try {
+        const preferences = await Preferences.findOne({
+          chatId: _ctx.chat.id,
+        });
+        return (
+          (key === "Sí" && preferences.getNotifications === true) ||
+          (key === "No" && preferences.getNotifications === false)
+        );
+      } catch (err) {
+        console.log(err.stack);
+      }
+    },
   });
   bot.use(menu.init());
 
@@ -80,7 +111,7 @@ const express = require("express");
       };
 
       const scraper = new TuenvioScraper(options);
-      scraper.on(events.custom.data, ({ title, url, image, price }) => {
+      scraper.on(events.custom.data, async ({ title, url, image, price }) => {
         if (
           include_terms.some((term) =>
             title.toLowerCase().includes(term.toLowerCase())
@@ -89,8 +120,12 @@ const express = require("express");
             (term) => !title.toLowerCase().includes(term.toLowerCase())
           )
         ) {
-          for (const chatId of chatIds) {
-            await telegram.sendMessage(chatId, `${title} (${price}) ${url}`);
+          const allPreferences = await Preferences.find();
+          for (const preferences of allPreferences) {
+            await telegram.sendMessage(
+              preferences.chatId,
+              `${title} (${price}) ${url}`
+            );
           }
         }
       });
