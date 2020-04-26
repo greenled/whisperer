@@ -93,10 +93,15 @@ function TuenvioScraper(options) {
       const url = `${baseUrl}Products?depPid=${depPid}`;
       console.info(`Scraping ${url}`);
 
-      await page.goto(url, {
-        waitLoad: true,
-        waitNetworkIdle: true,
-      });
+      try {
+        await page.goto(url, {
+          waitLoad: true,
+          waitNetworkIdle: true,
+        });
+      } catch (err) {
+        this.emit(events.custom.error, err);
+        continue;
+      }
 
       const productNodesTot = await page.evaluate(
         (_) => document.querySelectorAll("ul.hProductItems li").length

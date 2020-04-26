@@ -87,6 +87,7 @@ setInterval(async () => {
       }
     }
   });
+  scraper.on(events.custom.error, err => console.error);
   await scraper.run(baseUrl, depPids);
   await scraper.close();
 }, 300000);
