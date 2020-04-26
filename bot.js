@@ -56,7 +56,7 @@ const Preferences = require("./models/Preferences");
       "Soy un bot que te puede informar sobre la disponibilidad de determinados productos en el sitio Tuenvio"
     );
     ctx.reply("Cada 10 minutos reviso el sitio");
-    ctx.reply("Puedes cambiar las preferencias con /config");
+    ctx.reply("Puedes cambiar las preferencias con /settings");
   });
 
   const menu = new TelegrafInlineMenu(
@@ -64,7 +64,7 @@ const Preferences = require("./models/Preferences");
       ", "
     )}, excepto si también contiene ${exclude_terms.join(", ")}?`
   );
-  menu.setCommand("config");
+  menu.setCommand("settings");
   menu.select("s", ["Sí", "No"], {
     setFunc: async (ctx, key) => {
       try {
