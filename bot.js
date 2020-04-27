@@ -129,7 +129,10 @@ const Preferences = require("./models/Preferences");
           }
         }
       });
-      scraper.on(events.custom.error, (err) => console.error);
+      scraper.on(
+        events.custom.error,
+        console.error.bind(console, "Scraping error:")
+      );
       await scraper.run(baseUrl, depPids);
       await scraper.close();
     } catch (err) {
