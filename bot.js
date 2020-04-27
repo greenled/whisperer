@@ -80,53 +80,33 @@ const Preferences = require("./models/Preferences");
   });
   bot.use(stopMenu.init());
 
-  const notificationsMenu = new TelegrafInlineMenu(
-    `¿Te aviso si hay algún producto en ${baseUrl} cuyo nombre contenga ${include_terms.join(
-      ", "
-    )}, excepto si también contiene ${exclude_terms.join(", ")}?`
-  );
-  notificationsMenu.select("s", ["Sí", "No"], {
-    setFunc: async (ctx, key) => {
+  const settingsMenu = new TelegrafInlineMenu("Preferencias");
+  settingsMenu.setCommand("settings");
+
+  settingsMenu.toggle("Notificaciones", "notifications", {
+    setFunc: async (ctx, newState) => {
       try {
-        const preferences = await Preferences.findOne({
-          chatId: ctx.chat.id,
-        });
-        if (key === "Sí") {
-          if (preferences.getNotifications === false) {
-            preferences.getNotifications = true;
-            await preferences.save();
+        await Preferences.updateOne(
+          {
+            chatId: ctx.chat.id,
+          },
+          {
+            getNotifications: newState,
           }
-          await ctx.answerCbQuery("Te avisaré");
-        } else {
-          if (preferences.getNotifications === true) {
-            preferences.getNotifications = false;
-            await preferences.save();
-          }
-          await ctx.answerCbQuery("No te avisaré");
-        }
-      } catch (err) {
-        console.log(err.stack);
-      }
-    },
-    isSetFunc: async (_ctx, key) => {
-      try {
-        const preferences = await Preferences.findOne({
-          chatId: _ctx.chat.id,
-        });
-        return (
-          (key === "Sí" && preferences.getNotifications === true) ||
-          (key === "No" && preferences.getNotifications === false)
         );
       } catch (err) {
         console.log(err.stack);
       }
     },
-    setParentMenuAfter: true,
+    isSetFunc: (ctx) => {
+      const preferences = await Preferences.findOne({
+          chatId: ctx.chat.id,
+        });
+      return preferences.getNotifications;
+    },
   });
 
-  const settingsMenu = new TelegrafInlineMenu("Preferencias");
   settingsMenu.submenu("🔔 Notificaciones", "notifications", notificationsMenu);
-  settingsMenu.setCommand("settings");
   bot.use(
     settingsMenu.init({
       backButtonText: "Volver…",
