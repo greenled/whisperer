@@ -51,6 +51,32 @@ const Preferences = require("./models/Preferences");
     }
   });
 
+  const settingsMenu = new TelegrafInlineMenu("Preferencias");
+  settingsMenu.setCommand("settings");
+
+  settingsMenu.toggle("Notificaciones", "notifications", {
+    setFunc: async (ctx, newState) => {
+      try {
+        await Preferences.updateOne(
+          {
+            chatId: ctx.chat.id,
+          },
+          {
+            getNotifications: newState,
+          }
+        );
+      } catch (err) {
+        console.log(err.stack);
+      }
+    },
+    isSetFunc: async (ctx) => {
+      const preferences = await Preferences.findOne({
+        chatId: ctx.chat.id,
+      });
+      return preferences.getNotifications;
+    },
+  });
+
   const stopMenu = new TelegrafInlineMenu(
     `¿Seguro que deseas dejar de recibir notificaciones? ¡Te advierto que no guardaré tus preferencias!`
   );
@@ -78,33 +104,7 @@ const Preferences = require("./models/Preferences");
     },
     joinLastRow: true,
   });
-  bot.use(stopMenu.init());
-
-  const settingsMenu = new TelegrafInlineMenu("Preferencias");
-  settingsMenu.setCommand("settings");
-
-  settingsMenu.toggle("Notificaciones", "notifications", {
-    setFunc: async (ctx, newState) => {
-      try {
-        await Preferences.updateOne(
-          {
-            chatId: ctx.chat.id,
-          },
-          {
-            getNotifications: newState,
-          }
-        );
-      } catch (err) {
-        console.log(err.stack);
-      }
-    },
-    isSetFunc: async (ctx) => {
-      const preferences = await Preferences.findOne({
-        chatId: ctx.chat.id,
-      });
-      return preferences.getNotifications;
-    },
-  });
+  settingsMenu.submenu("🛑 Detener servicio", "stop", stopMenu);
 
   bot.use(
     settingsMenu.init({
