@@ -80,18 +80,6 @@ const Preferences = require("./models/Preferences");
   });
   bot.use(stopMenu.init());
 
-  const settingsMenu = new TelegrafInlineMenu("Preferencias");
-  settingsMenu.setCommand("settings");
-  bot.use(settingsMenu.init());
-
-  bot.help((ctx) => {
-    ctx.reply(
-      "Soy un bot que te puede informar sobre la disponibilidad de determinados productos en el sitio Tuenvio"
-    );
-    ctx.reply("Cada 10 minutos reviso el sitio");
-    ctx.reply("Puedes cambiar las preferencias con /settings");
-  });
-
   const notificationsMenu = new TelegrafInlineMenu(
     `¿Te aviso si hay algún producto en ${baseUrl} cuyo nombre contenga ${include_terms.join(
       ", "
@@ -134,7 +122,19 @@ const Preferences = require("./models/Preferences");
       }
     },
   });
+
+  const settingsMenu = new TelegrafInlineMenu("Preferencias");
   settingsMenu.submenu("🔔 Notificaciones", "notifications", notificationsMenu);
+  settingsMenu.setCommand("settings");
+  bot.use(settingsMenu.init());
+
+  bot.help((ctx) => {
+    ctx.reply(
+      "Soy un bot que te puede informar sobre la disponibilidad de determinados productos en el sitio Tuenvio"
+    );
+    ctx.reply("Cada 10 minutos reviso el sitio");
+    ctx.reply("Puedes cambiar las preferencias con /settings");
+  });
 
   setInterval(async () => {
     try {
