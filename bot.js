@@ -80,6 +80,10 @@ const Preferences = require("./models/Preferences");
   });
   bot.use(stopMenu.init());
 
+  const settingsMenu = new TelegrafInlineMenu("Preferencias");
+  settingsMenu.setCommand("settings");
+  bot.use(settingsMenu.init());
+
   bot.help((ctx) => {
     ctx.reply(
       "Soy un bot que te puede informar sobre la disponibilidad de determinados productos en el sitio Tuenvio"
@@ -88,13 +92,12 @@ const Preferences = require("./models/Preferences");
     ctx.reply("Puedes cambiar las preferencias con /settings");
   });
 
-  const menu = new TelegrafInlineMenu(
+  const notificationsMenu = new TelegrafInlineMenu(
     `¿Te aviso si hay algún producto en ${baseUrl} cuyo nombre contenga ${include_terms.join(
       ", "
     )}, excepto si también contiene ${exclude_terms.join(", ")}?`
   );
-  menu.setCommand("settings");
-  menu.select("s", ["Sí", "No"], {
+  notificationsMenu.select("s", ["Sí", "No"], {
     setFunc: async (ctx, key) => {
       try {
         const preferences = await Preferences.findOne({
@@ -131,7 +134,7 @@ const Preferences = require("./models/Preferences");
       }
     },
   });
-  bot.use(menu.init());
+  settingsMenu.submenu("🔔 Notificaciones", "notifications", notificationsMenu);
 
   setInterval(async () => {
     try {
