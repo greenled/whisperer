@@ -126,7 +126,12 @@ const Preferences = require("./models/Preferences");
   const settingsMenu = new TelegrafInlineMenu("Preferencias");
   settingsMenu.submenu("🔔 Notificaciones", "notifications", notificationsMenu);
   settingsMenu.setCommand("settings");
-  bot.use(settingsMenu.init());
+  bot.use(
+    settingsMenu.init({
+      backButtonText: "Volver…",
+      mainMenuButtonText: "Volver al menú principal…",
+    })
+  );
 
   bot.help((ctx) => {
     ctx.reply(
