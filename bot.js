@@ -14,8 +14,6 @@ const Preferences = require("./models/Preferences");
   const token = process.env.BOT_TOKEN;
   const baseUrl = process.env.BASE_URL;
   const depPids = process.env.DEP_PIDS.split(",");
-  const include_terms = process.env.INCLUDE_TERMS.split(",");
-  const exclude_terms = process.env.EXCLUDE_TERMS.split(",");
   const bot = new Telegraf(token);
   const telegram = new Telegram(token);
   const expressApp = express();
@@ -57,9 +55,7 @@ const Preferences = require("./models/Preferences");
       }
       ctx.reply("Hola");
       ctx.reply(
-        `Te avisaré si hay algún producto en ${baseUrl} cuyo nombre contenga ${include_terms.join(
-          ", "
-        )}, excepto si también contiene ${exclude_terms.join(", ")}`
+        `Te avisaré si hay algún producto en ${baseUrl} que te interese`
       );
     } catch (err) {
       console.log(err.stack);
@@ -242,16 +238,18 @@ const Preferences = require("./models/Preferences");
 
       const scraper = new TuenvioScraper(options);
       scraper.on(events.custom.data, async ({ title, url, image, price }) => {
-        if (
-          include_terms.some((term) =>
-            title.toLowerCase().includes(term.toLowerCase())
-          ) &&
-          exclude_terms.every(
-            (term) => !title.toLowerCase().includes(term.toLowerCase())
-          )
-        ) {
-          const allPreferences = await Preferences.find();
-          for (const preferences of allPreferences) {
+        const allPreferences = await Preferences.find();
+        for (const preferences of allPreferences) {
+          if (
+            preferences.alerts.some(
+              (alert) =>
+                title.toLowerCase().includes(alert.term.toLowerCase()) &&
+                alert.exceptions.every(
+                  (exception) =>
+                    !title.toLowerCase().includes(exception.toLowerCase())
+                )
+            )
+          ) {
             await telegram.sendMessage(
               preferences.chatId,
               `${title} (${price}) ${url}`
