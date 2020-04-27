@@ -27,6 +27,21 @@ const Preferences = require("./models/Preferences");
   const db = mongoose.connection;
   db.on("error", console.error.bind(console, "MongoDB connection error:"));
 
+  telegram.setMyCommands([
+    {
+      command: "start",
+      description: "Iniciar bot",
+    },
+    {
+      command: "settings",
+      description: "Preferencias",
+    },
+    {
+      command: "help",
+      description: "Ayuda",
+    },
+  ]);
+
   expressApp.use(bot.webhookCallback(`/bot${token}`));
   bot.telegram.setWebhook(`${URL}/bot${token}`);
 
