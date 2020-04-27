@@ -51,6 +51,35 @@ const Preferences = require("./models/Preferences");
     }
   });
 
+  const stopMenu = new TelegrafInlineMenu(
+    `¿Seguro que deseas dejar de recibir notificaciones? ¡Te advierto que no guardaré tus preferencias!`
+  );
+  stopMenu.setCommand("stop");
+  stopMenu.button("✅ Sí", "yes", {
+    doFunc: async (ctx) => {
+      try {
+        await Preferences.deleteOne({ chatId: ctx.chat.id });
+        await ctx.reply("😢 Listo. No volveré a enviarte notificaciones.");
+        await ctx.reply(
+          "Si cambias de opinión siempre puedes volver a comenzar mediante el comando /start"
+        );
+      } catch (err) {
+        console.log(err.stack);
+      }
+    },
+  });
+  stopMenu.button("❌ No", "no", {
+    doFunc: async (ctx) => {
+      try {
+        await ctx.reply("😅 Eso estuvo cerca");
+      } catch (err) {
+        console.log(err.stack);
+      }
+    },
+    joinLastRow: true,
+  });
+  bot.use(stopMenu.init());
+
   bot.help((ctx) => {
     ctx.reply(
       "Soy un bot que te puede informar sobre la disponibilidad de determinados productos en el sitio Tuenvio"
