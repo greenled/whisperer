@@ -121,6 +121,7 @@ const Preferences = require("./models/Preferences");
         console.log(err.stack);
       }
     },
+    setParentMenuAfter: true,
   });
 
   const settingsMenu = new TelegrafInlineMenu("Preferencias");
