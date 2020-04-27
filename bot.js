@@ -98,10 +98,10 @@ const Preferences = require("./models/Preferences");
         console.log(err.stack);
       }
     },
-    isSetFunc: (ctx) => {
+    isSetFunc: async (ctx) => {
       const preferences = await Preferences.findOne({
-          chatId: ctx.chat.id,
-        });
+        chatId: ctx.chat.id,
+      });
       return preferences.getNotifications;
     },
   });
