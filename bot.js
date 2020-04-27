@@ -95,8 +95,7 @@ const Preferences = require("./models/Preferences");
   const stopMenu = new TelegrafInlineMenu(
     `¿Seguro que deseas dejar de recibir notificaciones? ¡Te advierto que no guardaré tus preferencias!`
   );
-  stopMenu.setCommand("stop");
-  stopMenu.button("✅ Sí", "yes", {
+  stopMenu.button("Continuar", "continue", {
     doFunc: async (ctx) => {
       try {
         await Preferences.deleteOne({ chatId: ctx.chat.id });
@@ -108,16 +107,6 @@ const Preferences = require("./models/Preferences");
         console.log(err.stack);
       }
     },
-  });
-  stopMenu.button("❌ No", "no", {
-    doFunc: async (ctx) => {
-      try {
-        await ctx.reply("😅 Eso estuvo cerca");
-      } catch (err) {
-        console.log(err.stack);
-      }
-    },
-    joinLastRow: true,
   });
   settingsMenu.submenu("🛑 Detener servicio", "stop", stopMenu);
 
