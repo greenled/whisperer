@@ -106,7 +106,6 @@ const Preferences = require("./models/Preferences");
     },
   });
 
-  settingsMenu.submenu("🔔 Notificaciones", "notifications", notificationsMenu);
   bot.use(
     settingsMenu.init({
       backButtonText: "Volver…",
