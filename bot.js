@@ -110,6 +110,115 @@ const Preferences = require("./models/Preferences");
   });
   settingsMenu.submenu("🛑 Detener servicio", "stop", stopMenu);
 
+  const exceptionsSubmenuOptions = async (ctx) => {
+    try {
+      const preferences = await Preferences.findOne({ chatId: ctx.chat.id });
+      const alert = preferences.alerts.find(
+        (alert) => alert.term === ctx.match[1]
+      );
+      return alert.exceptions;
+    } catch (err) {
+      console.log(err.stack);
+    }
+  };
+  const exceptionMenu = new TelegrafInlineMenu(
+    async (ctx) =>
+      `Alertar cuando un nombre de producto contenga "${ctx.match[1]}", excepto si también contiene "${ctx.match[2]}"`
+  );
+  const exceptionButtonText = (ctx, key) => `Ex. "${key}"`;
+  exceptionMenu.button("Eliminar excepción", "delete", {
+    doFunc: async (ctx) => {
+      try {
+        const preferences = await Preferences.findOne({ chatId: ctx.chat.id });
+        const alert = preferences.alerts.find(
+          (alert) => alert.term === ctx.match[1]
+        );
+        alert.exceptions.unshift(alert.exceptions.indexOf(ctx.match[2]), 1);
+        preferences.save();
+      } catch (err) {
+        console.log(err.stack);
+      }
+    },
+  });
+
+  const alertsSubmenuOptions = async (ctx) => {
+    try {
+      const preferences = await Preferences.findOne({ chatId: ctx.chat.id });
+      return preferences.alerts.map((alert) => alert.term);
+    } catch (err) {
+      console.log(err.stack);
+    }
+  };
+  const alertMenu = new TelegrafInlineMenu(
+    async (ctx) =>
+      `Alertar cuando un nombre de producto contenga "${ctx.match[1]}"`
+  );
+  alertMenu.selectSubmenu(
+    "exception",
+    exceptionsSubmenuOptions,
+    exceptionMenu,
+    {
+      textFunc: exceptionButtonText,
+      columns: 2,
+    }
+  );
+  alertMenu.question("Añadir excepción", "addException", {
+    uniqueIdentifier: "type-exception-term",
+    questionText: (ctx) =>
+      `Alertar cuando un nombre de producto contenga "${ctx.match[1]}", excepto si también contiene...¿?`,
+    setFunc: async (ctx, key) => {
+      try {
+        const preferences = await Preferences.findOne({ chatId: ctx.chat.id });
+        const alert = preferences.alerts.find(
+          (alert) => alert.term === ctx.match[1]
+        );
+        if (!alert.exceptions.includes(key)) {
+          alert.exceptions.push(key);
+          preferences.save();
+        }
+      } catch (err) {
+        console.log(err.stack);
+      }
+    },
+  });
+  alertMenu.button("Eliminar alerta", "delete", {
+    doFunc: async (ctx) => {
+      try {
+        const preferences = await Preferences.findOne({ chatId: ctx.chat.id });
+        preferences.alerts = preferences.alerts.filter(
+          (alert) => alert.term !== ctx.match[1]
+        );
+        preferences.save();
+      } catch (err) {
+        console.log(err.stack);
+      }
+    },
+  });
+
+  const alertsMenu = new TelegrafInlineMenu("Alertas");
+  alertsMenu.selectSubmenu("alert", alertsSubmenuOptions, alertMenu);
+  alertMenu.question("Añadir alerta", "addAlert", {
+    uniqueIdentifier: "type-alert-term",
+    questionText: (ctx) => `Alertar cuando un nombre de producto contenga...¿?`,
+    setFunc: async (ctx, key) => {
+      try {
+        const preferences = await Preferences.findOne({ chatId: ctx.chat.id });
+        const alert = preferences.alerts.find(
+          (alert) => alert.term === ctx.match[1]
+        );
+        if (!preferences.alerts.some((alert) => alert.term === key)) {
+          preferences.alerts.push({
+            term: key,
+          });
+          preferences.save();
+        }
+      } catch (err) {
+        console.log(err.stack);
+      }
+    },
+  });
+  settingsMenu.submenu("🔔 Alertas", "alerts", alertsMenu);
+
   bot.use(
     settingsMenu.init({
       backButtonText: "Volver…",
