@@ -127,9 +127,10 @@ const Preferences = require("./models/Preferences");
       const alert = preferences.alerts.find(
         (alert) => alert.term === ctx.match[1]
       );
-      return `Alertar cuando un nombre de producto contenga "${
-        alert.term
-      }", excepto si también contiene "${alert.exceptions.join()}"`;
+      return `Alertar cuando un nombre de producto contenga:\n
+        **${alert.term}**\n
+        excepto si también contiene:\n
+        "${alert.exceptions.map((exception) => `- ${exception}`).join("\n")}"`;
     } catch (err) {
       console.log(err.stack);
     }
