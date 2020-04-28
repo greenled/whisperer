@@ -233,9 +233,7 @@ const Preferences = require("./models/Preferences");
       return ctx.scene.leave();
     }
   );
-  const stage = new Stage([alertCreationWizard], {
-    default: "create_alert",
-  });
+  const stage = new Stage([alertCreationWizard]);
   bot.use(session());
   bot.use(stage.middleware());
   bot.command("add", (ctx) => ctx.scene.enter("create_alert"));
