@@ -113,38 +113,6 @@ const Preferences = require("./models/Preferences");
   });
   settingsMenu.submenu("🛑 Detener servicio", "stop", stopMenu);
 
-  const exceptionsSubmenuOptions = async (ctx) => {
-    try {
-      const preferences = await Preferences.findOne({ chatId: ctx.chat.id });
-      const alert = preferences.alerts.find(
-        (alert) => alert.term === ctx.match[1]
-      );
-      return alert.exceptions;
-    } catch (err) {
-      console.log(err.stack);
-    }
-  };
-  const exceptionMenu = new TelegrafInlineMenu(
-    async (ctx) =>
-      `Alertar cuando un nombre de producto contenga "${ctx.match[1]}", excepto si también contiene "${ctx.match[2]}"`
-  );
-  const exceptionButtonText = (ctx, key) => `Ex. "${key}"`;
-  exceptionMenu.button("Eliminar excepción", "delete", {
-    doFunc: async (ctx) => {
-      try {
-        const preferences = await Preferences.findOne({ chatId: ctx.chat.id });
-        const alert = preferences.alerts.find(
-          (alert) => alert.term === ctx.match[1]
-        );
-        alert.exceptions.unshift(alert.exceptions.indexOf(ctx.match[2]), 1);
-        preferences.save();
-      } catch (err) {
-        console.log(err.stack);
-      }
-    },
-    setParentMenuAfter: true,
-  });
-
   const alertsSubmenuOptions = async (ctx) => {
     try {
       const preferences = await Preferences.findOne({ chatId: ctx.chat.id });
@@ -155,16 +123,7 @@ const Preferences = require("./models/Preferences");
   };
   const alertMenu = new TelegrafInlineMenu(
     async (ctx) =>
-      `Alertar cuando un nombre de producto contenga "${ctx.match[1]}"`
-  );
-  alertMenu.selectSubmenu(
-    "exception",
-    exceptionsSubmenuOptions,
-    exceptionMenu,
-    {
-      textFunc: exceptionButtonText,
-      columns: 2,
-    }
+      `Alertar cuando un nombre de producto contenga "${ctx.match[1]}", excepto si también contiene "${ctx.match[2]}"`
   );
   alertMenu.button("Eliminar alerta", "delete", {
     doFunc: async (ctx) => {
