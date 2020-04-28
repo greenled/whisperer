@@ -142,6 +142,7 @@ const Preferences = require("./models/Preferences");
         console.log(err.stack);
       }
     },
+    setParentMenuAfter: true,
   });
 
   const alertsSubmenuOptions = async (ctx) => {
@@ -177,6 +178,7 @@ const Preferences = require("./models/Preferences");
         console.log(err.stack);
       }
     },
+    setParentMenuAfter: true,
   });
 
   const alertsMenu = new TelegrafInlineMenu("Alertas");
