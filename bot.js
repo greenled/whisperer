@@ -195,7 +195,7 @@ const Preferences = require("./models/Preferences");
       } catch (err) {
         console.log(err.stack);
       }
-      ctx.reply(
+      ctx.replyWithMarkdown(
         `Te notificaré cuando un nombre de producto contenga:\n
         **${ctx.wizard.state.term}**\n
         excepto si también contiene:\n
