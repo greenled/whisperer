@@ -196,9 +196,10 @@ const Preferences = require("./models/Preferences");
         console.log(err.stack);
       }
       ctx.reply(
-        `Te notificaré cuando un nombre de producto contenga "${
-          ctx.wizard.state.term
-        }", excepto si también contiene "${exceptions.join()}"`
+        `Te notificaré cuando un nombre de producto contenga:\n
+        **${ctx.wizard.state.term}**\n
+        excepto si también contiene:\n
+        "${exceptions.map((exception) => `- ${exception}`).join("\n")}"`
       );
       return ctx.scene.leave();
     }
