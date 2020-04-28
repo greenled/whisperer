@@ -121,10 +121,19 @@ const Preferences = require("./models/Preferences");
       console.log(err.stack);
     }
   };
-  const alertMenu = new TelegrafInlineMenu(
-    async (ctx) =>
-      `Alertar cuando un nombre de producto contenga "${ctx.match[1]}", excepto si también contiene "${ctx.match[2]}"`
-  );
+  const alertMenu = new TelegrafInlineMenu(async (ctx) => {
+    try {
+      const preferences = await Preferences.findOne({ chatId: ctx.chat.id });
+      const alert = preferences.alerts.find(
+        (alert) => alert.term === ctx.match[1]
+      );
+      return `Alertar cuando un nombre de producto contenga "${
+        alert.term
+      }", excepto si también contiene "${alert.exceptions.split()}"`;
+    } catch (err) {
+      console.log(err.stack);
+    }
+  });
   alertMenu.button("Eliminar alerta", "delete", {
     doFunc: async (ctx) => {
       try {
