@@ -125,9 +125,9 @@ const Preferences = require("./models/Preferences");
     try {
       const preferences = await Preferences.findOne({ chatId: ctx.chat.id });
       const alert = preferences.alerts.find(
-        (alert) => alert.term === ctx.match[0]
+        (alert) => alert.term === ctx.match[1]
       );
-      return `Alertar cuando un nombre de producto contenga "${ctx.match[0]}"`;
+      return `Alertar cuando un nombre de producto contenga "${ctx.match[1]}"`;
     } catch (err) {
       console.log(err.stack);
     }
