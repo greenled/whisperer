@@ -128,9 +128,9 @@ const Preferences = require("./models/Preferences");
         (alert) => alert.term === ctx.match[1]
       );
       return `Alertar cuando un nombre de producto contenga:\n
-**${alert.term}**\n
+*${alert.term}*\n
 excepto si también contiene:\n
-${alert.exceptions.map((exception) => `- *${exception}*`).join("\n")}`;
+${alert.exceptions.map((exception) => `- _${exception}_`).join("\n")}`;
     } catch (err) {
       console.log(err.stack);
     }
@@ -198,9 +198,9 @@ ${alert.exceptions.map((exception) => `- *${exception}*`).join("\n")}`;
       }
       ctx.replyWithMarkdown(
         `Te notificaré cuando un nombre de producto contenga:\n
-**${ctx.wizard.state.term}**\n
+*${ctx.wizard.state.term}*\n
 excepto si también contiene:\n
-${exceptions.map((exception) => `- *${exception}*`).join("\n")}`
+${exceptions.map((exception) => `- _${exception}_`).join("\n")}`
       );
       return ctx.scene.leave();
     }
