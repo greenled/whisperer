@@ -130,7 +130,7 @@ const Preferences = require("./models/Preferences");
       return `Alertar cuando un nombre de producto contenga:\n
         **${alert.term}**\n
         excepto si también contiene:\n
-        "${alert.exceptions.map((exception) => `- ${exception}`).join("\n")}"`;
+        ${alert.exceptions.map((exception) => `- ${exception}`).join("\n")}`;
     } catch (err) {
       console.log(err.stack);
     }
@@ -200,7 +200,7 @@ const Preferences = require("./models/Preferences");
         `Te notificaré cuando un nombre de producto contenga:\n
         **${ctx.wizard.state.term}**\n
         excepto si también contiene:\n
-        "${exceptions.map((exception) => `- ${exception}`).join("\n")}"`
+        ${exceptions.map((exception) => `- ${exception}`).join("\n")}`
       );
       return ctx.scene.leave();
     }
