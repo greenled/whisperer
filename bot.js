@@ -1,5 +1,8 @@
 const { Telegraf } = require("telegraf");
 const Telegram = require("telegraf/telegram");
+const Stage = require("telegraf/stage");
+const session = require("telegraf/session");
+const WizardScene = require("telegraf/scenes/wizard");
 const TelegrafInlineMenu = require("telegraf-inline-menu");
 const events = require("./scraper/events");
 const TuenvioScraper = require("./scraper/TuenvioScraper");
@@ -37,6 +40,10 @@ const Preferences = require("./models/Preferences");
     {
       command: "help",
       description: "Ayuda",
+    },
+    {
+      command: "add",
+      description: "Agregar alerta",
     },
   ]);
 
@@ -158,25 +165,6 @@ const Preferences = require("./models/Preferences");
       columns: 2,
     }
   );
-  alertMenu.question("Añadir excepción", "addException", {
-    uniqueIdentifier: "type-exception-term",
-    questionText: (ctx) =>
-      `Alertar cuando un nombre de producto contenga "${ctx.match[1]}", excepto si también contiene...¿?`,
-    setFunc: async (ctx, key) => {
-      try {
-        const preferences = await Preferences.findOne({ chatId: ctx.chat.id });
-        const alert = preferences.alerts.find(
-          (alert) => alert.term === ctx.match[1]
-        );
-        if (!alert.exceptions.includes(key)) {
-          alert.exceptions.push(key);
-          preferences.save();
-        }
-      } catch (err) {
-        console.log(err.stack);
-      }
-    },
-  });
   alertMenu.button("Eliminar alerta", "delete", {
     doFunc: async (ctx) => {
       try {
@@ -193,26 +181,6 @@ const Preferences = require("./models/Preferences");
 
   const alertsMenu = new TelegrafInlineMenu("Alertas");
   alertsMenu.selectSubmenu("alert", alertsSubmenuOptions, alertMenu);
-  alertMenu.question("Añadir alerta", "addAlert", {
-    uniqueIdentifier: "type-alert-term",
-    questionText: (ctx) => `Alertar cuando un nombre de producto contenga...¿?`,
-    setFunc: async (ctx, key) => {
-      try {
-        const preferences = await Preferences.findOne({ chatId: ctx.chat.id });
-        const alert = preferences.alerts.find(
-          (alert) => alert.term === ctx.match[1]
-        );
-        if (!preferences.alerts.some((alert) => alert.term === key)) {
-          preferences.alerts.push({
-            term: key,
-          });
-          preferences.save();
-        }
-      } catch (err) {
-        console.log(err.stack);
-      }
-    },
-  });
   settingsMenu.submenu("🔔 Alertas", "alerts", alertsMenu);
 
   bot.use(
@@ -221,6 +189,56 @@ const Preferences = require("./models/Preferences");
       mainMenuButtonText: "Volver al menú principal…",
     })
   );
+
+  const alertCreationWizard = new WizardScene(
+    "create_alert",
+    (ctx) => {
+      ctx.reply("¿Sobre qué debo alertarte?");
+      return ctx.wizard.next();
+    },
+    async (ctx) => {
+      const preferences = await Preferences.findOne({ chatId: ctx.chat.id });
+      if (ctx.message.text.length == 0) {
+        ctx.reply(`Debes introducir al menos una letra`);
+        return ctx.scene.leave();
+      } else if (
+        preferences.alerts.some((alert) => alert.term === ctx.message.text)
+      ) {
+        ctx.reply(`Ya has agregado una alerta para "${ctx.message.text}"`);
+        return ctx.scene.leave();
+      }
+      ctx.wizard.state.term = ctx.message.text;
+      ctx.reply("¿Excepciones? (separadas por coma)");
+      return ctx.wizard.next();
+    },
+    async (ctx) => {
+      const exceptions = ctx.message.text
+        .split(",")
+        .map((exception) => exception.trim());
+      try {
+        const preferences = await Preferences.findOne({ chatId: ctx.chat.id });
+        preferences.alerts.push({
+          term: ctx.wizard.state.term,
+          exceptions: exceptions,
+        });
+        preferences.save();
+      } catch (err) {
+        console.log(err.stack);
+      }
+      ctx.reply(
+        `Te notificaré cuando un nombre de producto contenga "${
+          ctx.wizard.state.term
+        }", excepto si también contiene "${exceptions.join()}"`
+      );
+      return ctx.scene.leave();
+    }
+  );
+  const stage = new Stage([alertCreationWizard], {
+    default: "create_alert",
+  });
+  bot.use(session());
+  bot.use(stage.middleware());
+  bot.command("add", (ctx) => ctx.scene.enter("create_alert"));
 
   bot.help((ctx) => {
     ctx.reply(
