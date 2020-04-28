@@ -129,7 +129,7 @@ const Preferences = require("./models/Preferences");
       );
       return `Alertar cuando un nombre de producto contenga "${
         alert.term
-      }", excepto si también contiene "${alert.exceptions.split()}"`;
+      }", excepto si también contiene "${alert.exceptions.join()}"`;
     } catch (err) {
       console.log(err.stack);
     }
