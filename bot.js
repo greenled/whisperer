@@ -178,13 +178,15 @@ ${alert.exceptions.map((exception) => `- _${exception}_`).join("\n")}`;
         return ctx.scene.leave();
       }
       ctx.wizard.state.term = ctx.message.text;
-      await ctx.reply("¿Excepciones? (separadas por coma)");
+      await ctx.replyWithMarkdown(`¿Excepciones?\n
+Si hay excepciones escríbelas separadas por ",". De lo contrario escribe "no".)`);
       return ctx.wizard.next();
     },
     async (ctx) => {
-      const exceptions = ctx.message.text
-        .split(",")
-        .map((exception) => exception.trim());
+      const exceptions =
+        ctx.message.text === "no"
+          ? []
+          : ctx.message.text.split(",").map((exception) => exception.trim());
       try {
         const preferences = await Preferences.findOne({ chatId: ctx.chat.id });
         preferences.alerts.push({
