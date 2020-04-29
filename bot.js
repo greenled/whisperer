@@ -163,22 +163,22 @@ ${alert.exceptions.map((exception) => `- _${exception}_`).join("\n")}`;
   const alertCreationWizard = new WizardScene(
     "create_alert",
     (ctx) => {
-      ctx.reply("¿Sobre qué debo alertarte?");
+      await ctx.reply("¿Sobre qué debo alertarte?");
       return ctx.wizard.next();
     },
     async (ctx) => {
       const preferences = await Preferences.findOne({ chatId: ctx.chat.id });
       if (ctx.message.text.length == 0) {
-        ctx.reply(`Debes introducir al menos una letra`);
+        await ctx.reply(`Debes introducir al menos una letra`);
         return ctx.scene.leave();
       } else if (
         preferences.alerts.some((alert) => alert.term === ctx.message.text)
       ) {
-        ctx.reply(`Ya has agregado una alerta para "${ctx.message.text}"`);
+        await ctx.reply(`Ya has agregado una alerta para "${ctx.message.text}"`);
         return ctx.scene.leave();
       }
       ctx.wizard.state.term = ctx.message.text;
-      ctx.reply("¿Excepciones? (separadas por coma)");
+      await ctx.reply("¿Excepciones? (separadas por coma)");
       return ctx.wizard.next();
     },
     async (ctx) => {
@@ -195,7 +195,7 @@ ${alert.exceptions.map((exception) => `- _${exception}_`).join("\n")}`;
       } catch (err) {
         console.log(err.stack);
       }
-      ctx.replyWithMarkdown(
+      await ctx.replyWithMarkdown(
         `Te notificaré cuando un nombre de producto contenga:\n
 *${ctx.wizard.state.term}*\n
 excepto si también contiene:\n
@@ -210,11 +210,11 @@ ${exceptions.map((exception) => `- _${exception}_`).join("\n")}`
   bot.command("add", (ctx) => ctx.scene.enter("create_alert"));
 
   bot.help((ctx) => {
-    ctx.reply(
+    await ctx.reply(
       "Soy un bot que te puede informar sobre la disponibilidad de determinados productos en el sitio Tuenvio"
     );
-    ctx.reply("Cada 10 minutos reviso el sitio");
-    ctx.reply("Puedes cambiar las preferencias con /settings");
+    await ctx.reply("Cada 10 minutos reviso el sitio");
+    await ctx.reply("Puedes cambiar las preferencias con /settings");
   });
 
   setInterval(async () => {
