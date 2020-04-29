@@ -101,9 +101,8 @@ Comienza con el comando /add.`);
     doFunc: async (ctx) => {
       try {
         await Preferences.deleteOne({ chatId: ctx.chat.id });
-        await ctx.reply("😢 Listo. No volveré a enviarte notificaciones.");
-        await ctx.reply(
-          "Si cambias de opinión siempre puedes volver a comenzar mediante el comando /start"
+        await ctx.reply(`😢 Listo, no volveré a enviarte notificaciones.\n
+Si cambias de opinión siempre puedes volver a comenzar mediante el comando /start`
         );
       } catch (err) {
         console.log(err.stack);
@@ -211,10 +210,9 @@ ${exceptions.map((exception) => `- _${exception}_`).join("\n")}`
 
   bot.help((ctx) => {
     await ctx.reply(
-      "Soy un bot que te puede informar sobre la disponibilidad de determinados productos en el sitio Tuenvio"
-    );
-    await ctx.reply("Cada 10 minutos reviso el sitio");
-    await ctx.reply("Puedes cambiar las preferencias con /settings");
+      `Soy un bot que te puede informar sobre la disponibilidad de determinados productos en el sitio Tuenvio\n
+Cada 10 minutos reviso el sitio
+Puedes cambiar las preferencias con /settings`);
   });
 
   setInterval(async () => {
