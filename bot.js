@@ -60,8 +60,8 @@ const Preferences = require("./models/Preferences");
         });
         await preferences.save();
       }
-      await ctx.replyWithMarkdown(`👋 *¡Hola!*\n
-Te avisaré si hay algún producto en ${baseUrl} que te interese.\n
+      await ctx.replyWithMarkdown(`👋 *¡Hola!*
+Te avisaré si hay algún producto en ${baseUrl} que te interese.
 Comienza con el comando /add.`);
     } catch (err) {
       console.log(err.stack);
@@ -101,7 +101,7 @@ Comienza con el comando /add.`);
     doFunc: async (ctx) => {
       try {
         await Preferences.deleteOne({ chatId: ctx.chat.id });
-        await ctx.reply(`😢 Listo, no volveré a enviarte notificaciones.\n
+        await ctx.reply(`😢 Listo, no volveré a enviarte notificaciones.
 Si cambias de opinión siempre puedes volver a comenzar mediante el comando /start`);
       } catch (err) {
         console.log(err.stack);
@@ -124,9 +124,9 @@ Si cambias de opinión siempre puedes volver a comenzar mediante el comando /sta
       const alert = preferences.alerts.find(
         (alert) => alert.term === ctx.match[1]
       );
-      return `Alertar cuando un nombre de producto contenga:\n
-*${alert.term}*\n
-excepto si también contiene:\n
+      return `Alertar cuando un nombre de producto contenga:
+*${alert.term}*
+excepto si también contiene:
 ${alert.exceptions.map((exception) => `- _${exception}_`).join("\n")}`;
     } catch (err) {
       console.log(err.stack);
@@ -178,7 +178,7 @@ ${alert.exceptions.map((exception) => `- _${exception}_`).join("\n")}`;
         return ctx.scene.leave();
       }
       ctx.wizard.state.term = ctx.message.text;
-      await ctx.replyWithMarkdown(`¿Excepciones?\n
+      await ctx.replyWithMarkdown(`¿Excepciones?
 Si hay excepciones escríbelas separadas por ",". De lo contrario escribe "no".)`);
       return ctx.wizard.next();
     },
@@ -198,9 +198,9 @@ Si hay excepciones escríbelas separadas por ",". De lo contrario escribe "no".)
         console.log(err.stack);
       }
       await ctx.replyWithMarkdown(
-        `Te notificaré cuando un nombre de producto contenga:\n
-*${ctx.wizard.state.term}*\n
-excepto si también contiene:\n
+        `Te notificaré cuando un nombre de producto contenga:
+*${ctx.wizard.state.term}*
+excepto si también contiene:
 ${exceptions.map((exception) => `- _${exception}_`).join("\n")}`
       );
       return ctx.scene.leave();
