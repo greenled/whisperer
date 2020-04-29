@@ -102,8 +102,7 @@ Comienza con el comando /add.`);
       try {
         await Preferences.deleteOne({ chatId: ctx.chat.id });
         await ctx.reply(`😢 Listo, no volveré a enviarte notificaciones.\n
-Si cambias de opinión siempre puedes volver a comenzar mediante el comando /start`
-        );
+Si cambias de opinión siempre puedes volver a comenzar mediante el comando /start`);
       } catch (err) {
         console.log(err.stack);
       }
@@ -161,7 +160,7 @@ ${alert.exceptions.map((exception) => `- _${exception}_`).join("\n")}`;
 
   const alertCreationWizard = new WizardScene(
     "create_alert",
-    (ctx) => {
+    async (ctx) => {
       await ctx.reply("¿Sobre qué debo alertarte?");
       return ctx.wizard.next();
     },
@@ -173,7 +172,9 @@ ${alert.exceptions.map((exception) => `- _${exception}_`).join("\n")}`;
       } else if (
         preferences.alerts.some((alert) => alert.term === ctx.message.text)
       ) {
-        await ctx.reply(`Ya has agregado una alerta para "${ctx.message.text}"`);
+        await ctx.reply(
+          `Ya has agregado una alerta para "${ctx.message.text}"`
+        );
         return ctx.scene.leave();
       }
       ctx.wizard.state.term = ctx.message.text;
@@ -208,11 +209,12 @@ ${exceptions.map((exception) => `- _${exception}_`).join("\n")}`
   bot.use(stage.middleware());
   bot.command("add", (ctx) => ctx.scene.enter("create_alert"));
 
-  bot.help((ctx) => {
+  bot.help(async (ctx) => {
     await ctx.reply(
       `Soy un bot que te puede informar sobre la disponibilidad de determinados productos en el sitio Tuenvio\n
 Cada 10 minutos reviso el sitio
-Puedes cambiar las preferencias con /settings`);
+Puedes cambiar las preferencias con /settings`
+    );
   });
 
   setInterval(async () => {
