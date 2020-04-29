@@ -60,10 +60,9 @@ const Preferences = require("./models/Preferences");
         });
         await preferences.save();
       }
-      ctx.reply("Hola");
-      ctx.reply(
-        `Te avisaré si hay algún producto en ${baseUrl} que te interese`
-      );
+      await ctx.replyWithMarkdown(`👋 *¡Hola!*\n
+Te avisaré si hay algún producto en ${baseUrl} que te interese.\n
+Comienza con el comando /add.`);
     } catch (err) {
       console.log(err.stack);
     }
