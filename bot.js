@@ -212,7 +212,7 @@ ${exceptions.map((exception) => `- _${exception}_`).join("\n")}`
   bot.help(async (ctx) => {
     await ctx.reply(
       `Soy un bot que te puede informar sobre la disponibilidad de determinados productos en el sitio Tuenvio\n
-Cada 10 minutos reviso el sitio
+Cada 5 minutos reviso el sitio
 Puedes cambiar las preferencias con /settings`
     );
   });
