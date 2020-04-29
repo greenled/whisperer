@@ -29,9 +29,8 @@ const startCommandHandler = async (ctx) => {
       });
       await preferences.save();
     }
-    await ctx.replyWithMarkdown(`👋 *¡Hola!*\n
-Te avisaré si hay algún producto en ${baseUrl} que te interese.\n
-Comienza con el comando /add.`);
+    ctx.reply("Hola");
+    ctx.reply(`Te avisaré si hay algún producto en ${baseUrl} que te interese`);
   } catch (err) {
     console.log(err.stack);
   }
