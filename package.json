@@ -1,7 +1,7 @@
 {
   "name": "whisperer",
   "dependencies": {
-    "express": "^4.17.1",
+    "express": "^4.18.2",
     "mongodb": "^3.5.6",
     "mongoose": "^5.9.10",
     "puppeteer": "^3.0.1",
